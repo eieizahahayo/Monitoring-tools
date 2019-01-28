@@ -1,0 +1,16 @@
+version: "2"
+services:
+  node-exporter:
+    image: "prom/node-exporter:v0.17.0"
+    container_name: "node_exporter"
+    command: [ "--collector.textfile.directory=/mnt/custom_prom_data", "--path.rootfs", "/host", "--path.procfs", "/host/proc", "--path.sysfs", "/host/sys", "--web.listen-address", "0.0.0.0:9100" ]
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/opt/data/monitor/node-exporter/custom_prom_data:/mnt/custom_prom_data"
+    logging:
+      options:
+        max-size: '50m'
+        max-file: '7'
+    network_mode: host
+    restart: always
+

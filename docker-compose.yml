@@ -1,0 +1,87 @@
+version: '2'
+services: 
+  prometheus:
+    image: "prom/prometheus:v2.3.1"
+    container_name: prometheus
+    hostname: "prometheus"
+    command: "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - "/home/card/Desktop/proteus/learning/docker/monitoring-stack/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "/home/card/Desktop/proteus/learning/docker/monitoring-stack/alert-rules.yml:/etc/prometheus/alert-rules.yml"
+
+    ports:
+      - "9090:9090"
+    networks:
+      - card-network
+
+  node_exporter:
+    image: "carlosedp/node_exporter"
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    networks: 
+      - card-network
+
+  c_advisor:
+    image: "google/cadvisor:v0.30.2"
+    container_name: c_advisor
+    ports: 
+      - "8080:8080"
+    networks: 
+      - card-network
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+
+  grafana:
+    image: "grafana/grafana"
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - card-network
+
+  alert_manager:
+    image: "prom/alertmanager:v0.15.0"
+    container_name: alert_manager
+    command: "--config.file=/usr/src/alertmanager.yml"
+    ports:
+      - "9093:9093"
+    volumes:
+      - "/home/card/Desktop/proteus/learning/docker/monitoring-stack/alertmanager.yml:/usr/src/alertmanager.yml"
+    networks:
+      - card-network
+
+  alertmanager-bot:
+    image: metalmatze/alertmanager-bot:0.3.1
+    container_name: alertmanager-bot
+    environment:
+      ALERTMANAGER_URL: http://alert_manager:9093
+      BOLT_PATH: /data/bot.db
+      STORE: bolt
+      LISTEN_ADDR: alertmanager-bot:8080
+      TELEGRAM_ADMIN: '639670471'
+      TELEGRAM_TOKEN: '767161279:AAGXCLVD-Y7csLgMMQMibbC58tMzzdfi_VQ'
+    networks: 
+      - card-network
+
+  # smartmon:
+  #   image: "smart"
+  #   hostname: "smartmon"
+  #   container_name: smartmon
+  #   command: /bin/bash -c "/bin/smartmon.sh > /tmp/smartmon.prom"
+  #   privileged: true
+  #   volumes:
+  #     - "/home/card/Desktop/proteus/learning/docker/monitoring-stack/smart/:/tmp/"
+  #   devices:
+  #     - "/dev:/dev"
+  #   networks: 
+  #     - card-network
+
+
+networks:
+  card-network:
+    external: 
+      name: "card-network"

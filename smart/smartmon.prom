@@ -1,0 +1,3 @@
+# HELP smartmon_smartctl_version SMART metric smartctl_version
+# TYPE smartmon_smartctl_version gauge
+smartmon_smartctl_version{version="6.6"} 1

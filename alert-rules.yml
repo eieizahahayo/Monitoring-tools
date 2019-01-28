@@ -1,0 +1,69 @@
+groups:
+- name: recording_rules
+  interval: 5s
+  rules:
+    - record: node_exporter:node_filesystem_free:fs_used_percents
+      expr: 100 - 100 * ( node_filesystem_free {mountpoint="/"} / node_filesystem_size{mountpoint="/"} )
+
+    - record: node_exporter:node_memory_free:memory_used_percents
+      expr: 100 - 100 * (node_memory_MemFree / node_memory_MemTotal)
+
+- name: alearting_rules
+  rules:
+
+  # Alert for any instance that is unreachable for >5 minutes.
+  - alert: InstanceDown
+    expr: up == 0
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+
+  # Alert for any instance that has a median request latency >1s.
+  - alert: APIHighRequestLatency
+    expr: api_http_request_latencies_second{quantile="0.5"} > 1
+    for: 10m
+    annotations:
+      summary: "High request latency on {{ $labels.instance }}"
+      description: "{{ $labels.instance }} has a median request latency above 1s (current value: {{ $value }}s)"
+
+  # Alert for average CPU load more than 1 over the last 15 minutes.
+  - alert: CPU-load-morethan1-over15
+    expr: node_load15 >= 1
+    labels:
+      serverity: major
+    annotations:
+      summary: "Instance {{ $labels.instance }} - high load average"
+      description: "{{ $labels.instance }} (measured by {{ $labels.job }}) has high load average ({{ $value }}) over 15 minutes."
+
+  # Alert for high CPU load more than 1 over 2 minutes.
+  - alert: CPU-load-morethan1-over2
+    expr: node_load1 > 1
+    for: 2m
+    labels: 
+      serverity: moderate
+    annotations:
+      summary: "Instance {{ $labels.insstance }} under high load"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."
+
+  # Alert for low disk space (less than 10%)
+  - alert: low-disk-space
+    expr: node_exporter:node_filesystem_free:fs_used_percents >= 90
+    labels:
+      serverity: moderate
+    annotations:
+      summary: "Instance {{ $labels.instance }} is low on disk space"
+      description: "{{ $labels.instance }} has only {{ $value }}% free."
+
+  # Alert for high memory usage (more than 90%)
+  - alert: low-memory-space
+    expr: node_exporter:node_memory_free:memory_used_percents >= 90
+    labels:
+      serverity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} high memory usage"
+      description: "{{ $labels.instance }} has more than 90% of its memory used."
+
+    

@@ -1,0 +1,19 @@
+version: '3'
+services:
+  c_advisor:
+    container_name: "c_advisor"
+    hostname: "c_advisor"
+    image: "google/cadvisor:v0.29.0"
+    ports: 
+      - "8080:8080"
+    networks: 
+      - card-network
+    volumes:
+      - ./:/rootfs:ro
+      - ./var/run:/var/run:ro
+      - ./sys:/sys:ro
+      - ./var/lib/docker/:/var/lib/docker:ro
+      - ./dev/disk/:/dev/disk:ro
+networks:
+  card-network:
+    external: true
