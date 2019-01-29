@@ -62,8 +62,8 @@ services:
       BOLT_PATH: /data/bot.db
       STORE: bolt
       LISTEN_ADDR: alertmanager-bot:8080
-      TELEGRAM_ADMIN: '639670471'
-      TELEGRAM_TOKEN: '767161279:AAGXCLVD-Y7csLgMMQMibbC58tMzzdfi_VQ'
+      TELEGRAM_ADMIN: ''
+      TELEGRAM_TOKEN: ''
     networks: 
       - card-network
 
